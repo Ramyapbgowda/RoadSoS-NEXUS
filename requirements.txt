@@ -1,0 +1,14 @@
+flask>=3.0
+numpy>=1.24
+pillow>=10.0
+
+# --- Optional, for the production upgrade path (see README.md) ---
+# ultralytics        # real YOLOv8 crash-severity detection
+# openai-whisper     # real offline voice transcription
+# transformers       # IndicBERT NLP classification
+# langgraph          # real multi-agent orchestration framework
+# langchain-core
+# flwr               # real Federated Learning (Flower)
+# twilio             # real SMS/WhatsApp alerts
+# xgboost            # real XGBoost risk model
+# torch              # LSTM risk model / Whisper backend
