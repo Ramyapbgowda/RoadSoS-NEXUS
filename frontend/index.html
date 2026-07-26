@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RoadSoS NEXUS — Command Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="logo-dot">RS</div>
+      <div>
+        <div class="name">Road<span>SoS</span> NEXUS</div>
+        <div class="tag">TEAM HACKNOVA</div>
+      </div>
+    </div>
+
+    <nav class="navlist">
+      <div class="nav-item active" data-page="page-dashboard"><span class="ic">📊</span> Dashboard</div>
+      <div class="nav-item" data-page="page-map"><span class="ic">🗺️</span> Live Map</div>
+      <div class="nav-item" data-page="page-report"><span class="ic">🚨</span> AI Pipeline</div>
+      <div class="nav-item" data-page="page-agents"><span class="ic">🤖</span> Multi-Agent</div>
+      <div class="nav-item" data-page="page-twin"><span class="ic">🧬</span> Digital Twin</div>
+      <div class="nav-item" data-page="page-hospitals"><span class="ic">🏥</span> Hospitals &amp; Police</div>
+      <div class="nav-item" data-page="page-federated"><span class="ic">🔐</span> Federated Learning</div>
+      <div class="nav-item" data-page="page-analytics"><span class="ic">📈</span> Analytics</div>
+      <div class="nav-item" data-page="page-admin"><span class="ic">⚙️</span> Admin</div>
+    </nav>
+
+    <div class="sidebar-status">
+      <div class="row"><span><span class="dot green"></span>Backend</span><span>Online</span></div>
+      <div class="row"><span><span class="dot green"></span>Risk Model</span><span>Loaded</span></div>
+      <div class="row"><span><span class="dot yellow"></span>CV Model</span><span>Heuristic</span></div>
+      <div class="row" style="margin-bottom:0;"><span><span class="dot green"></span>DB</span><span>SQLite</span></div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <div id="main">
+    <div id="topbar">
+      <div>
+        <h1 id="page-title">Command Center Dashboard</h1>
+        <div class="sub">RoadSoS NEXUS · Predictive Accident Intelligence &amp; Multi-Agent Emergency Orchestration</div>
+      </div>
+      <div class="topbar-right">
+        <div class="live-badge"><span class="pulse"></span> LIVE</div>
+        <div class="topbar-clock" id="topbar-clock">--:--:--<div class="d" id="topbar-date">-- --- ----</div></div>
+        <div class="topbar-icon-btn" title="Notifications">🔔<span class="notif-dot"></span></div>
+        <div class="topbar-avatar" title="Admin User">HN</div>
+      </div>
+    </div>
+
+    <div id="content">
+
+      <!-- ========== DASHBOARD ========== -->
+      <section class="page active" id="page-dashboard">
+        <div class="grid grid-4 mb-12">
+          <div class="card stat-card glow-red">
+            <div class="icon-badge" style="background:var(--red-light);color:var(--red);">🚨</div>
+            <div class="value" id="stat-total">0</div>
+            <div class="label">Total Incidents Logged</div>
+            <div class="stat-progress"><div class="stat-progress-fill" style="width:70%;background:var(--red);"></div></div>
+          </div>
+          <div class="card stat-card glow-cyan">
+            <div class="icon-badge" style="background:var(--blue-light);color:var(--blue);">📅</div>
+            <div class="value" id="stat-today">0</div>
+            <div class="label">Incidents Today</div>
+            <div class="stat-progress"><div class="stat-progress-fill" style="width:40%;background:var(--blue);"></div></div>
+          </div>
+          <div class="card stat-card glow-yellow">
+            <div class="icon-badge" style="background:var(--yellow-light);color:#B45309;">⏱️</div>
+            <div class="value" id="stat-eta">0 min</div>
+            <div class="label">Avg. Dispatch ETA</div>
+            <div class="delta down">▼ Faster than 8-min national avg</div>
+          </div>
+          <div class="card stat-card glow-green">
+            <div class="icon-badge" style="background:var(--green-light);color:#16A34A;">💚</div>
+            <div class="value" id="stat-lives">0</div>
+            <div class="label">Est. Lives Saveable</div>
+            <div class="delta up">▲ Golden Hour survival model</div>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="grid-template-columns: 1.4fr 1fr;">
+          <div class="card">
+            <div class="section-title"><span class="ic">📋</span> Recent Incidents</div>
+            <table class="data-table">
+              <thead><tr><th>ID</th><th>Severity</th><th>Risk</th><th>Hospital</th><th>ETA</th><th>Time</th></tr></thead>
+              <tbody id="recent-incidents-body"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="section-title"><span class="ic">📡</span> Live Event Log</div>
+            <div class="event-log" id="event-log"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-3 mt-16">
+          <div class="card">
+            <div class="section-title" style="font-size:13px;">🧠 AI Innovations Active</div>
+            <div class="text-sm text-muted">Risk Model · CV Severity · 9-Agent Orchestration · Voice AI · Hazard Mapping · Federated Learning</div>
+          </div>
+          <div class="card">
+            <div class="section-title" style="font-size:13px;">⚡ Pipeline Speed</div>
+            <div class="text-sm text-muted">5-stage pipeline completes in single-digit to low-double-digit milliseconds in local testing.</div>
+          </div>
+          <div class="card">
+            <div class="section-title" style="font-size:13px;">🌐 Coverage</div>
+            <div class="text-sm text-muted">7 Indian languages wired for script-based detection · extensible to full 22 with Whisper.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== LIVE MAP ========== -->
+      <section class="page" id="page-map">
+        <div id="map-panel">
+          <div id="leaflet-map"></div>
+          <div class="map-search">
+            <input type="text" id="map-search-input" placeholder="Search location…">
+            <button id="map-search-btn">Go</button>
+          </div>
+          <div class="map-layers-toggle">
+            <div style="font-weight:700;margin-bottom:6px;">Map Layers</div>
+            <label><input type="checkbox" class="layer-toggle" data-layer="hospitals" checked> 🏥 Hospitals</label>
+            <label><input type="checkbox" class="layer-toggle" data-layer="police" checked> 🚓 Police</label>
+            <label><input type="checkbox" class="layer-toggle" data-layer="hazards" checked> ⚠️ Hazards</label>
+            <label><input type="checkbox" class="layer-toggle" data-layer="incidents" checked> 💥 Incidents</label>
+            <label><input type="checkbox" class="layer-toggle" data-layer="ambulance" checked> 🚑 Ambulance</label>
+            <button class="btn btn-ghost btn-sm mt-8 w-full" id="report-hazard-btn">📍 Report Hazard on Map</button>
+          </div>
+          <div class="map-legend">
+            <div class="item"><span class="legend-dot" style="background:#00ffa3;"></span>Hospital</div>
+            <div class="item"><span class="legend-dot" style="background:#00d9ff;"></span>Police</div>
+            <div class="item"><span class="legend-dot" style="background:#ffd23d;"></span>Hazard</div>
+            <div class="item"><span class="legend-dot" style="background:#ff3b5c;"></span>Incident / Ambulance</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== AI PIPELINE / REPORT ========== -->
+      <section class="page" id="page-report">
+        <div class="pipeline-track">
+          <div class="pipeline-node" id="pn-1"><div class="num">1</div><div class="lbl">Incident<br>Detected</div><div class="spinner"></div></div>
+          <div class="pipeline-node" id="pn-2"><div class="num">2</div><div class="lbl">Language &amp;<br>Severity AI</div><div class="spinner"></div></div>
+          <div class="pipeline-node" id="pn-3"><div class="num">3</div><div class="lbl">Risk<br>Analysis</div><div class="spinner"></div></div>
+          <div class="pipeline-node" id="pn-4"><div class="num">4</div><div class="lbl">9-Agent<br>Orchestration</div><div class="spinner"></div></div>
+          <div class="pipeline-node" id="pn-5"><div class="num">5</div><div class="lbl">Dispatch &amp;<br>Alert Sent</div><div class="spinner"></div></div>
+        </div>
+
+        <div class="grid grid-2" style="grid-template-columns: 1fr 1.1fr; align-items:start;">
+          <div class="card">
+            <div class="section-title"><span class="ic">🚨</span> Report an Incident</div>
+            <form id="report-form">
+              <div class="form-grid-2">
+                <div class="form-row"><label>Latitude</label><input type="text" id="inc-lat" required></div>
+                <div class="form-row"><label>Longitude</label><input type="text" id="inc-lon" required></div>
+              </div>
+              <div class="text-sm text-muted mt-8" id="map-picked-note">📍 Default: Bengaluru center — pick a point on the Live Map page to change.</div>
+
+              <div class="form-row mt-12">
+                <label>Reported Text — type or speak in any of 22 Indian languages</label>
+                <textarea id="inc-text" placeholder="e.g. Accident on highway, please help / एक्सीडेंट हो गया है"></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="flex gap-8">
+                  <select id="voice-lang-select" style="flex:1;"></select>
+                  <button type="button" class="btn btn-ghost btn-sm" id="voice-btn">🎙️ Speak Report</button>
+                </div>
+                <div class="text-sm text-muted mt-8" id="voice-detected-lang"></div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-row"><label>Emergency Contact</label><input type="tel" id="inc-contact" value="+91-9876543210"></div>
+                <div class="form-row"><label>Vehicle Type</label>
+                  <select id="inc-vehicle">
+                    <option>car</option><option>bike</option><option>bus</option><option>truck</option><option>pedestrian</option><option>auto-rickshaw</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-row"><label>Number of Victims</label><input type="number" id="inc-victims" value="1" min="1"></div>
+                <div class="form-row"><label>Road Condition</label>
+                  <select id="inc-road"><option value="dry">Dry</option><option value="wet">Wet</option><option value="damaged">Damaged</option></select>
+                </div>
+              </div>
+
+              <div class="form-row"><label>Weather</label>
+                <select id="inc-weather"><option value="clear">Clear</option><option value="rain">Rain</option><option value="fog">Fog</option></select>
+              </div>
+
+              <div class="checkbox-row">
+                <label><input type="checkbox" id="inc-night"> Night</label>
+                <label><input type="checkbox" id="inc-raining"> Raining</label>
+              </div>
+
+              <div class="form-row">
+                <label>Dashcam / CCTV / Crash Photo</label>
+                <div class="file-drop" onclick="document.getElementById('inc-image').click()">Click to upload an image — feeds the CV Severity AI</div>
+                <input type="file" id="inc-image" accept="image/*" style="display:none;">
+                <div class="file-preview" id="image-preview-wrap"></div>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-full mt-12" id="submit-btn">🚨 Trigger NEXUS Pipeline</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="section-title"><span class="ic">📟</span> Pipeline Output</div>
+            <div class="grid grid-2 mb-12">
+              <div class="gauge-wrap"><canvas id="gauge-risk" height="110"></canvas><div class="gauge-value" id="gauge-risk-val">—</div><div class="gauge-label">Risk Score</div></div>
+              <div class="gauge-wrap"><canvas id="gauge-cv" height="110"></canvas><div class="gauge-value" id="gauge-cv-val">—</div><div class="gauge-label">CV Severity Confidence</div></div>
+            </div>
+            <div id="pipeline-output"><p class="text-muted text-sm">Submit an incident to see all 5 stages fire in real time.</p></div>
+
+            <div class="section-title mt-16" style="font-size:13px;"><span class="ic">🔔</span> Notification Timeline</div>
+            <div id="notif-timeline"><p class="text-muted text-sm">No notifications yet.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== MULTI-AGENT ========== -->
+      <section class="page" id="page-agents">
+        <div class="card mb-12">
+          <div class="section-title"><span class="ic">🤖</span> 9-Agent Live Command Grid</div>
+          <div class="section-sub">Triage · Dispatch · Route · Legal · Medical · Prediction · Communication · Weather · Traffic — genuinely concurrent execution (see backend/agents.py)</div>
+          <div class="grid grid-3" id="agent-grid"></div>
+        </div>
+      </section>
+
+      <!-- ========== DIGITAL TWIN ========== -->
+      <section class="page" id="page-twin">
+        <div class="card">
+          <div class="section-title"><span class="ic">🧬</span> Digital Twin — Road Network Simulation</div>
+          <div class="section-sub">Simulated ambulance transit, live traffic-light phases, route progress — stand-in for SUMO (see backend/digital_twin.py). Submit an incident on the AI Pipeline page to populate this with a real route.</div>
+          <div id="twin-canvas-wrap"><canvas id="twin-canvas" height="320"></canvas></div>
+          <div class="text-sm text-muted mt-12" id="twin-eta">Waiting for an incident…</div>
+        </div>
+      </section>
+
+      <!-- ========== HOSPITALS & POLICE ========== -->
+      <section class="page" id="page-hospitals">
+        <div class="grid grid-2" style="grid-template-columns:1.4fr 1fr;align-items:start;">
+          <div>
+            <div class="section-title"><span class="ic">🏥</span> Nearby Hospitals — Live Bed Availability</div>
+            <div id="hospitals-list"></div>
+          </div>
+          <div>
+            <div class="section-title"><span class="ic">🚓</span> Nearest Police Station</div>
+            <div id="police-panel"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== FEDERATED LEARNING ========== -->
+      <section class="page" id="page-federated">
+        <div class="card">
+          <div class="section-title"><span class="ic">🔐</span> Federated Privacy Learning Simulation</div>
+          <div class="section-sub">Real FedAvg weighted-averaging algorithm across simulated device nodes — raw data never transmitted (see backend/federated.py)</div>
+          <div class="fed-viz" id="fed-viz"></div>
+          <div class="flex-between mt-12">
+            <div id="fed-result" class="text-sm text-muted">Run a round to see client aggregation.</div>
+            <button class="btn btn-cyan" id="fed-run-btn">🔄 Simulate Federated Round</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== ANALYTICS ========== -->
+      <section class="page" id="page-analytics">
+        <div id="analytics-summary" class="mb-12"></div>
+        <div class="grid grid-2">
+          <div class="card"><div class="section-title" style="font-size:13px;">Severity Distribution</div><canvas id="chart-severity" height="220"></canvas></div>
+          <div class="card"><div class="section-title" style="font-size:13px;">Risk Band Distribution</div><canvas id="chart-risk" height="220"></canvas></div>
+          <div class="card"><div class="section-title" style="font-size:13px;">Language Usage</div><canvas id="chart-language" height="220"></canvas></div>
+          <div class="card"><div class="section-title" style="font-size:13px;">Incidents — Last 7 Days</div><canvas id="chart-timeline" height="220"></canvas></div>
+          <div class="card" style="grid-column:1/-1;"><div class="section-title" style="font-size:13px;">Hospital Response Load</div><canvas id="chart-hospitals" height="180"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ========== ADMIN ========== -->
+      <section class="page" id="page-admin">
+        <div class="card">
+          <div class="flex-between mb-12">
+            <div class="section-title" style="margin-bottom:0;"><span class="ic">⚙️</span> Incident Administration</div>
+            <div class="flex gap-8">
+              <button class="btn btn-ghost btn-sm" id="admin-export-csv">⬇ Export CSV</button>
+              <button class="btn btn-ghost btn-sm" id="admin-export-pdf">⬇ Export PDF</button>
+            </div>
+          </div>
+          <div class="flex gap-12 mb-12">
+            <input type="text" id="admin-search" placeholder="Search incident ID, hospital, text…" style="flex:1;">
+            <select id="admin-severity-filter" style="width:180px;">
+              <option value="">All Severities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="SERIOUS">Serious</option>
+              <option value="MINOR">Minor</option>
+            </select>
+          </div>
+          <div class="text-sm text-muted mb-12" id="admin-count"></div>
+          <div style="max-height:520px;overflow-y:auto;">
+            <table class="data-table">
+              <thead><tr><th>ID</th><th>Severity</th><th>Risk</th><th>Hospital</th><th>Vehicle</th><th>Victims</th><th>Time</th><th></th></tr></thead>
+              <tbody id="admin-table-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="admin-pagination"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/map.js"></script>
+<script src="js/agents.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/digitaltwin.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
